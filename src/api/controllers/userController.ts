@@ -93,7 +93,7 @@ const userPost = async (
     const user = {
       user_name: req.body.user_name!,
       email: req.body.email!,
-      role: req.body.role!,
+      // role: req.body.role!,
       password: bcrypt.hashSync(req.body.password!, 10),
     };
     const newUser = await userModel.create(user);
@@ -175,4 +175,37 @@ const userDeleteCurrent = async (
   }
 };
 
-export {userPost, userGet, userListGet, userPutCurrent, userDeleteCurrent};
+const checkToken = async (
+  req: Request<{}, {}, {}>,
+  res: Response,
+  next: NextFunction
+) => {
+  const errors = validationResult(res.locals.user._id);
+  if (!errors.isEmpty()) {
+    const messages: string = errors
+      .array()
+      .map((error) => `${error.msg}: ${error.param}`)
+      .join(', ');
+    next(new CustomError(messages, 400));
+    return;
+  }
+  try {
+    const user: UserOutput = {
+      user_name: res.locals.user.user_name,
+      email: res.locals.user.email,
+      _id: res.locals.user._id,
+    };
+    res.json(user);
+  } catch (error) {
+    next(new CustomError('Error getting user', 500));
+  }
+};
+
+export {
+  userPost,
+  userGet,
+  userListGet,
+  userPutCurrent,
+  userDeleteCurrent,
+  checkToken,
+};

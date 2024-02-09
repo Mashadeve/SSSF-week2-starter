@@ -91,24 +91,24 @@ describe('GET /api/v1', () => {
     await getCurrentUser(app, token);
   });
 
-  // // test cat upload without GPS
-  // let catID: string;
-  // it('should upload a cat', async () => {
-  //   const message = await postCat(app, token, 'cat.jpg');
-  //   catID = message.data._id;
-  // });
+  // test cat upload without GPS
+  let catID: string;
+  it('should upload a cat', async () => {
+    const message = await postCat(app, token, 'cat.jpg');
+    catID = message.data._id;
+  });
 
-  // // test cat upload with GPS
-  // let catID2: string;
-  // it('should upload a cat with GPS', async () => {
-  //   const message = await postCat(app, token, 'picWithGPS.jpg');
-  //   catID2 = message.data._id;
-  // });
+  // test cat upload with GPS
+  let catID2: string;
+  it('should upload a cat with GPS', async () => {
+    const message = await postCat(app, token, 'picWithGPS.jpg');
+    catID2 = message.data._id;
+  });
 
-  // // test get all cats
-  // it('should return array of cats', async () => {
-  //   await getCat(app);
-  // });
+  // test get all cats
+  it('should return array of cats', async () => {
+    await getCat(app);
+  });
 
   // // test get single cat
   // it('should return single cat', async () => {

@@ -1,6 +1,6 @@
 import express from 'express';
 import {
-  // checkToken,
+  checkToken,
   userDeleteCurrent,
   userGet,
   userListGet,
@@ -18,7 +18,7 @@ router
   .put(authenticate, userPutCurrent)
   .delete(authenticate, userDeleteCurrent);
 
-// router.get('/token', authenticate, checkToken);
+router.get('/token', authenticate, checkToken);
 
 router.route('/:id').get(userGet);
 
