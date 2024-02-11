@@ -240,7 +240,7 @@ const catPutAdmin = async (
   }
   const user = res.locals.user as User;
   if (user.role !== 'admin') {
-    next(new CustomError('Not authorized', 401));
+    next(new CustomError('Not admin', 403));
     return;
   }
   try {
@@ -286,8 +286,8 @@ const catDelete = async (
       next(new CustomError('Cat not found', 404));
       return;
     }
-    if (cat.owner.toString() !== user._id.toString()) {
-      next(new CustomError('Not cat owner', 403));
+    if (user._id !== cat.owner._id.toString()) {
+      next(new CustomError('Not authorized', 401));
       return;
     }
     await cat.deleteOne();
