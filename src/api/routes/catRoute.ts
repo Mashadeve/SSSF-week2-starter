@@ -1,14 +1,14 @@
 import express, {Request} from 'express';
 import {
-  //   catDelete,
-  //   catGet,
+  catDelete,
+  catGet,
   catListGet,
   catPost,
-  //   catPut,
-  //   catGetByUser,
-  //   catGetByBoundingBox,
-  //   catPutAdmin,
-  //   catDeleteAdmin,
+  catPut,
+  catGetByUser,
+  catGetByBoundingBox,
+  catPutAdmin,
+  catDeleteAdmin,
 } from '../controllers/catController';
 import multer, {FileFilterCallback} from 'multer';
 import {body, param, query} from 'express-validator';
@@ -42,21 +42,25 @@ router
     catPost
   );
 
-router.route('/area').get(
-  query('topRight').notEmpty(),
-  query('bottomLeft').notEmpty()
-  // catGetByBoundingBox
-);
+router
+  .route('/area')
+  .get(
+    query('topRight').notEmpty(),
+    query('bottomLeft').notEmpty(),
+    catGetByBoundingBox
+  );
 
-// router.route('/user').get(authenticate, catGetByUser);
+router.route('/user').get(authenticate, catGetByUser);
 
-router.route('/admin/:id');
-//   .put(authenticate, catPutAdmin)
-//   .delete(authenticate, catDeleteAdmin);
+router
+  .route('/admin/:id')
+  .put(authenticate, catPutAdmin)
+  .delete(authenticate, catDeleteAdmin);
 
-router.route('/:id');
-//   .get(param('id'), catGet)
-//   .put(authenticate, param('id'), catPut)
-//   .delete(authenticate, param('id'), catDelete);
+router
+  .route('/:id')
+  .get(param('id'), catGet)
+  .put(authenticate, param('id'), catPut)
+  .delete(authenticate, param('id'), catDelete);
 
 export default router;
