@@ -83,11 +83,11 @@ const catListGet = async (
 };
 
 const catGetByUser = async (
-  req: Request<{}, {}, {}>,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const errors = validationResult(req);
+  const errors = validationResult(req.body);
   if (!errors.isEmpty()) {
     const messages: string = errors
       .array()
@@ -99,20 +99,9 @@ const catGetByUser = async (
   try {
     const user = res.locals.user as User;
     const cats = await catModel.find({owner: user._id});
-    const catList = cats.map((cat) => {
-      return {
-        _id: cat._id,
-        cat_name: cat.cat_name,
-        weight: cat.weight,
-        filename: cat.filename,
-        birthdate: cat.birthdate,
-        location: cat.location,
-        owner: cat.owner,
-      };
-    });
-    res.json(catList);
+    res.json(cats);
   } catch (error) {
-    next(new CustomError('Error getting cat user', 500));
+    next(error);
   }
 };
 
@@ -183,11 +172,11 @@ const catGet = async (
 };
 
 const catPut = async (
-  req: Request<{id: string}, {}, Cat>,
+  req: Request<{id: string}, {}, Partial<Cat>>,
   res: Response,
   next: NextFunction
 ) => {
-  const errors = validationResult(req);
+  const errors = validationResult(req.body);
   if (!errors.isEmpty()) {
     const messages: string = errors
       .array()
@@ -196,34 +185,51 @@ const catPut = async (
     next(new CustomError(messages, 400));
     return;
   }
+  const user = res.locals.user as User;
+  const cat = await catModel.findById(req.params.id);
+  const _cat = {
+    _id: cat!._id,
+    cat_name: cat!.cat_name,
+    weight: cat!.weight,
+    filename: cat!.filename,
+    birthdate: cat!.birthdate,
+    location: cat!.location,
+    owner: {
+      _id: cat!.owner._id.toString(),
+    },
+  };
+  if (user._id !== _cat.owner._id) {
+    next(new CustomError('Not authorized', 401));
+    return;
+  }
   try {
-    const user = res.locals.user as User;
-    const cat = await catModel.findById(req.params.id);
-    if (!cat) {
-      next(new CustomError('Cat not found', 404));
-      return;
-    }
-    if (cat.owner.toString() !== user._id.toString()) {
-      next(new CustomError('Not cat owner', 403));
-      return;
-    }
-    cat.cat_name = req.body.cat_name;
-    cat.weight = req.body.weight;
-    cat.birthdate = req.body.birthdate;
-    cat.location = res.locals.coords;
-    const updatedCat = await cat.save();
-    res.json(updatedCat);
-  } catch (error) {
-    next(new CustomError('Error updating cat', 500));
+    const cat: Partial<Cat> = req.body;
+    const result = await catModel.findByIdAndUpdate(_cat._id, cat, {
+      new: true,
+    });
+    res.json({
+      message: 'Cat updated',
+      data: {
+        _id: result!._id,
+        cat_name: result!.cat_name,
+        weight: result!.weight,
+        filename: result!.filename,
+        birthdate: result!.birthdate,
+        location: result!.location,
+        owner: result!.owner,
+      },
+    });
+  } catch (e) {
+    next(e);
   }
 };
 
 const catPutAdmin = async (
-  req: Request<{id: string}, {}, Cat>,
+  req: Request<{id: string}, {}, Partial<Cat>>,
   res: Response,
   next: NextFunction
 ) => {
-  const errors = validationResult(req);
+  const errors = validationResult(req.body);
   if (!errors.isEmpty()) {
     const messages: string = errors
       .array()
@@ -232,25 +238,30 @@ const catPutAdmin = async (
     next(new CustomError(messages, 400));
     return;
   }
+  const user = res.locals.user as User;
+  if (user.role !== 'admin') {
+    next(new CustomError('Not authorized', 401));
+    return;
+  }
   try {
-    const user = res.locals.user as User;
-    if (user.role !== 'admin') {
-      next(new CustomError('Not admin', 403));
-      return;
-    }
-    const cat = await catModel.findById(req.params.id);
-    if (!cat) {
-      next(new CustomError('Cat not found', 404));
-      return;
-    }
-    cat.cat_name = req.body.cat_name;
-    cat.weight = req.body.weight;
-    cat.birthdate = req.body.birthdate;
-    cat.location = res.locals.coords;
-    const updatedCat = await cat.save();
-    res.json(updatedCat);
-  } catch (error) {
-    next(new CustomError('Error updating cat', 500));
+    const cat: Partial<Cat> = req.body;
+    const result = await catModel.findByIdAndUpdate(req.params.id, cat, {
+      new: true,
+    });
+    res.json({
+      message: 'Cat updated',
+      data: {
+        _id: result!._id,
+        cat_name: result!.cat_name,
+        weight: result!.weight,
+        filename: result!.filename,
+        birthdate: result!.birthdate,
+        location: result!.location,
+        owner: result!.owner,
+      },
+    });
+  } catch (e) {
+    next(e);
   }
 };
 
