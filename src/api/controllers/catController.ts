@@ -112,7 +112,7 @@ const catGetByUser = async (
     });
     res.json(catList);
   } catch (error) {
-    next(new CustomError('Error getting cats', 500));
+    next(new CustomError('Error getting cat user', 500));
   }
 };
 
